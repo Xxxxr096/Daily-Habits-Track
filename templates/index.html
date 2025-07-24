@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Daily Habits Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <div class="min-h-screen flex flex-col items-center justify-center px-6">
+    
+    <div class="bg-white shadow-xl rounded-2xl p-10 max-w-xl text-center">
+      <h1 class="text-4xl font-bold text-gray-800 mb-4">Daily Habits Tracker</h1>
+      <p class="text-gray-600 text-lg mb-6">
+        Prenez le contrôle de vos habitudes. Suivez vos progrès jour après jour, construisez une vie meilleure.
+      </p>
+      
+      <a href="{{ url_for('login') }}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition duration-300">
+        Commencer
+      </a>
+      
+      <div class="mt-8 text-sm text-gray-500">
+        Pas encore inscrit ? <a href="{{ url_for('register') }}" class="text-blue-600 hover:underline">Créer un compte</a>
+      </div>
+    </div>
+
+    <!-- Section d'exemple d'habitudes (facultatif) -->
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-center text-gray-700">
+      <div>
+        <span class="text-2xl">📚</span>
+        <p>Lire 30 minutes</p>
+      </div>
+      <div>
+        <span class="text-2xl">💧</span>
+        <p>Boire 2L d’eau</p>
+      </div>
+      <div>
+        <span class="text-2xl">🚶‍♂️</span>
+        <p>Marcher 10 000 pas</p>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
