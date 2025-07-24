@@ -132,10 +132,13 @@ def delete_habit(habit_id):
 def complete_habit(habit_id):
     today = date.today()
     complete = Completion.query.filter_by(habit_id=habit_id, date=today).first()
-    if complete:
+    if not complete:
         db.session.add(Completion(habit_id=habit_id, date=today))
         db.session.commit()
         flash("Habitude marquée comme faite.", "success")
+    else:
+        flash("Déjà marquée comme faite aujourd'hui.", "info")
+
     return redirect(url_for("main"))
 
 
@@ -158,7 +161,7 @@ def login():
 def logout():
     logout_user()
     flash("Déconnexion réussie.", "info")
-    return redirect(url_for("login"))
+    return redirect(url_for("index"))
 
 
 @app.route("/register", methods=["GET", "POST"])

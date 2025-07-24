@@ -51,7 +51,7 @@
           <span class="text-lg font-medium">
             {{ habit.name }} {% if habit.id in completions %}
             <span class="ml-2 text-green-600 text-sm font-semibold"
-              >✔ Fait aujourd'hui</span
+              >✔ Fait le {{today.strftime("%d/%m/%Y")}}</span
             >
             {% endif %}
           </span>
