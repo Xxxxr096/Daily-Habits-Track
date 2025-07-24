@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Mes Habitudes - Daily Habits Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100 min-h-screen py-10 px-4">
+    <div class="max-w-3xl mx-auto bg-white shadow-xl rounded-xl p-6 space-y-6">
+      <h1 class="text-3xl font-bold text-center text-gray-800">
+        Bonjour {{ current_user.prenom }} 👋
+      </h1>
+      <p class="text-center text-sm text-gray-500 mb-4">
+        Nous sommes le {{ today.strftime("%d/%m/%Y") }}
+      </p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %}
+      <div
+        class="text-center text-sm px-4 py-2 rounded {% if category == 'success' %} bg-green-100 text-green-700 {% elif category == 'info' %} bg-blue-100 text-blue-700 {% else %} bg-red-100 text-red-700 {% endif %}"
+      >
+        {{ message }}
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <!-- Formulaire ajout d’habitude -->
+      <form method="POST" class="flex gap-4 items-center">
+        <input
+          type="text"
+          name="habit_name"
+          required
+          placeholder="Nouvelle habitude"
+          class="w-full px-4 py-2 border rounded-md focus:ring focus:ring-blue-300"
+        />
+        <button
+          type="submit"
+          class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 font-semibold"
+        >
+          Ajouter
+        </button>
+      </form>
+
+      <!-- Liste des habitudes -->
+      <ul class="space-y-4 mt-6">
+        {% for habit in habits %}
+        <li
+          class="flex items-center justify-between bg-gray-50 border rounded-md px-4 py-2"
+        >
+          <span class="text-lg font-medium">
+            {{ habit.name }} {% if habit.id in completions %}
+            <span class="ml-2 text-green-600 text-sm font-semibold"
+              >✔ Fait aujourd'hui</span
+            >
+            {% endif %}
+          </span>
+          <div class="flex gap-2">
+            {% if habit.id not in completions %}
+            <a
+              href="{{ url_for('complete_habit', habit_id=habit.id) }}"
+              class="text-sm bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+            >
+              Marquer comme fait
+            </a>
+            {% endif %}
+            <a
+              href="{{ url_for('delete_habit', habit_id=habit.id) }}"
+              class="text-sm bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+            >
+              Supprimer
+            </a>
+          </div>
+        </li>
+        {% else %}
+        <p class="text-center text-gray-500 mt-4">
+          Aucune habitude pour le moment.
+        </p>
+        {% endfor %}
+      </ul>
+
+      <!-- Déconnexion -->
+      <div class="text-center mt-6">
+        <a
+          href="{{ url_for('logout') }}"
+          class="text-sm text-red-500 hover:underline"
+          >Se déconnecter</a
+        >
+      </div>
+    </div>
+  </body>
+</html>
