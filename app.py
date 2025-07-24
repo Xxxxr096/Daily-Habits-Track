@@ -13,6 +13,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 from dotenv import load_dotenv
+from datetime import date
 
 
 load_dotenv()
@@ -20,7 +21,10 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+# app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+db_path = os.path.join(basedir, "app.db")
+app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 
 db = SQLAlchemy(app)
@@ -96,9 +100,43 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/main")
+@app.route("/main", methods=["GET", "POST"])
+@login_required
 def main():
-    return "salut"
+    if request.method == "POST":
+        habit_name = request.form["habit_name"]
+        new_habit = Habit(name=habit_name, user_id=current_user.id)
+        db.session.add(new_habit)
+        db.session.commit()
+        flash("Nouvelle Habitude ajouter", "success")
+        return redirect(url_for("main"))
+    habits = Habit.query.filter_by(user_id=current_user.id).all()
+    today = date.today()
+    completions = {c.habit_id for c in Completion.query.filter_by(date=today).all()}
+    return render_template(
+        "main.html", habits=habits, completions=completions, today=today
+    )
+
+
+@app.route("/delete_habit/<int:habit_id>")
+def delete_habit(habit_id):
+    habit = Habit.query.get_or_404(habit_id)
+    if habit.user_id == current_user.id:
+        db.session.delete(habit)
+        db.session.commit()
+        flash("Habitude supprimée.", "info")
+    return redirect(url_for("main"))
+
+
+@app.route("/complete_habit/<int:habit_id>")
+def complete_habit(habit_id):
+    today = date.today()
+    complete = Completion.query.filter_by(habit_id=habit_id, date=today).first()
+    if complete:
+        db.session.add(Completion(habit_id=habit_id, date=today))
+        db.session.commit()
+        flash("Habitude marquée comme faite.", "success")
+    return redirect(url_for("main"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -109,18 +147,25 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and bycrypt.check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for("main.html"))
+            return redirect(url_for("main"))
         else:
             flash("Email ou mot de passe incorrect", "error")
 
     return render_template("login.html")
 
 
+@app.route("/logout")
+def logout():
+    logout_user()
+    flash("Déconnexion réussie.", "info")
+    return redirect(url_for("login"))
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         prenom = request.form["prenom"]
-        nom = request.form["prenom"]
+        nom = request.form["nom"]
         email = request.form["email"]
         password = request.form["password"]
         confirm = request.form["confirm_password"]
@@ -128,7 +173,7 @@ def register():
             flash("Les mots de passe sont différents")
             return redirect(url_for("register"))
 
-        if User.query.filter_by(email=email):
+        if User.query.filter_by(email=email).first():
             flash("Un compte existe déja avec cet email.")
             return redirect(url_for(register))
 
@@ -139,6 +184,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         flash("Ton compte a bien été crée ! ", "success")
+        return redirect(url_for("login"))
     return render_template("register.html")
 
 
